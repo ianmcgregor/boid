@@ -22,7 +22,7 @@ describe('boid', function() {
 
     expect(boid.position).to.be.an('object');
     expect(boid.velocity).to.be.an('object');
-    expect(boid.edgeBehaviour).to.be.a('string');
+    // expect(boid.edgeBehaviour).to.be.a('string');
     expect(boid.mass).to.be.a('number');
     expect(boid.maxSpeed).to.be.a('number');
     expect(boid.maxForce).to.be.a('number');
@@ -30,7 +30,6 @@ describe('boid', function() {
 
   it ('should have static members', function() {
     expect(Boid.vec2).to.be.a('function');
-    expect(Boid.Vec2).to.be.a('function');
     expect(Boid.obstacle).to.be.a('function');
   });
 

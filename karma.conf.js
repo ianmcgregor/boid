@@ -1,4 +1,4 @@
-// Karma configuration
+'use strict';
 
 module.exports = function(config) {
   config.set({
@@ -10,10 +10,7 @@ module.exports = function(config) {
       'karma-mocha',
       'karma-chai',
       'karma-browserify',
-      'karma-chrome-launcher',
-      'karma-firefox-launcher'
-      //,'karma-ievms'
-      //,'karma-ios-launcher'
+      'karma-phantomjs-launcher'
     ],
 
     // frameworks to use
@@ -80,11 +77,7 @@ module.exports = function(config) {
     // - PhantomJS
     // - IE (only Windows; has to be installed with `npm install karma-ie-launcher`)
     browsers: [
-        //'iOS',
-        'Chrome',
-        'Firefox'
-        //,'IE11 - Win7'
-        //,'IE10 - Win7'
+        'PhantomJS'
     ],
 
 
