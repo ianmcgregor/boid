@@ -1,0 +1,22 @@
+{
+  "name": "boid",
+  "version": "0.1.0",
+  "homepage": "https://github.com/ianmcgregor/boid",
+  "authors": [
+    "Ian McGregor <i.mcgrgr@gmail.com>"
+  ],
+  "description": "Bird-like behaviours",
+  "main": "dist/boid.min.js",
+  "moduleType": [
+    "node",
+    "amd",
+    "globals"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ]
+}
