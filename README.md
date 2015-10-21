@@ -146,9 +146,9 @@ boid.pathThreshold
 // affects flock behaviour:
 
 // distance within which boid has sight of the flock
-boid.inSightDistance
+boid.maxDistance
 // distance within which boid is too close to another boid
-boid.tooCloseDistance
+boid.minDistance
 ```
 
 ### Helpers

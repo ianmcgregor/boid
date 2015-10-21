@@ -2,44 +2,52 @@
 
 (function() {
     var Boid = window.Boid,
-        canvas = document.querySelector('canvas'),
-        context = canvas.getContext('2d');
+        canvas = document.querySelector('[data-canvas]'),
+        width = canvas.offsetWidth,
+        height = canvas.offsetHeight;
 
-    var flockers = [],
-        flocker;
+    var boids = [],
+        boid;
 
-    while (flockers.length < 100) {
-        flocker = new Boid();
-        flocker.inSightDistance = 300;
-        flocker.tooCloseDistance = 20;
-        flocker.position.x = canvas.width * Math.random();
-        flocker.position.y = canvas.height * Math.random();
-        flocker.velocity.x = 20 * Math.random() - 10;
-        flocker.velocity.y = 20 * Math.random() - 10;
-        flockers.push(flocker);
-    }
+    while (boids.length < 100) {
+        boid = new Boid();
+        boid.setBounds(width, height);
+        boid.maxDistance = 300;
+        boid.minDistance = 20;
+        boid.position.x = width * Math.random();
+        boid.position.y = height * Math.random();
+        boid.velocity.x = 20 * Math.random() - 10;
+        boid.velocity.y = 20 * Math.random() - 10;
+        boids.push(boid);
 
-    function update() {
-        for (var i = 0; i < flockers.length; i++) {
-            flockers[i].flock(flockers).update();
-        }
-    }
-
-    function render() {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-
-        for (var i = 0; i < flockers.length; i++) {
-            var point = flockers[i].position;
-            context.beginPath();
-            context.arc(point.x, point.y, 2, 0, Math.PI * 2);
-            context.fill();
-        }
+        boid.userData.el = document.createElement('b');
+        canvas.appendChild(boid.userData.el);
     }
 
     function loop() {
         window.requestAnimationFrame(loop);
-        update();
-        render();
+
+        var boid, point, el, transform;
+
+        for (var i = 0; i < boids.length; i++) {
+            boid = boids[i];
+            boid.flock(boids).update();
+
+            point = boid.position;
+            transform = 'translate(' + point.x + 'px,' + point.y + 'px)';
+
+            el = boid.userData.el;
+            el.style.WebkitTransform = transform;
+            el.style.transform = transform;
+        }
     }
     loop();
+
+    window.addEventListener('resize', function() {
+        width = canvas.offsetWidth;
+        height = canvas.offsetHeight;
+        for (var i = 0; i < boids.length; i++) {
+            boids[i].setBounds(width, height);
+        }
+    });
 }());

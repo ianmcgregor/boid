@@ -8,10 +8,12 @@
           maxSpeed: 5,
           maxForce: 1,
           edgeBehavior: 'bounce',
-          inSightDistance: 400,
-          tooCloseDistance: 20,
+          maxDistance: 400,
+          minDistance: 20,
           count: 40
         };
+
+    Boid.Vec2.fill(100);
 
     var flockers = [];
     while (flockers.length < options.count) {
@@ -91,14 +93,14 @@
             flocker.edgeBehavior = value;
           });
         });
-        gui.add(options, 'inSightDistance', 0, 500).onChange(function(value) {
+        gui.add(options, 'maxDistance', 0, 500).onChange(function(value) {
           flockers.forEach(function(flocker) {
-            flocker.inSightDistance = value;
+            flocker.maxDistance = value;
           });
         });
-        gui.add(options, 'tooCloseDistance', 0, 100).onChange(function(value) {
+        gui.add(options, 'minDistance', 0, 100).onChange(function(value) {
           flockers.forEach(function(flocker) {
-            flocker.tooCloseDistance = value;
+            flocker.minDistance = value;
           });
         });
         gui.add(options, 'count', 1, 200).onChange(function(value) {

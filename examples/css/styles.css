@@ -146,11 +146,20 @@ canvas {
   margin: 0 auto;
 }
 
-canvas.background {
-  border: none;
+b {
+    background-color: #000;
+    border-radius: 50%;
+    display: block;
+    position: absolute;
+    width: 8px;
+    height: 8px;
+}
+
+.background {
   height: 100%;
   margin: 0;
   position: absolute;
   width: 100%;
   z-index: -1;
+  overflow: hidden;
 }
