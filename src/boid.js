@@ -6,13 +6,20 @@ function Boid() {
     var position = Vec2.get();
     var velocity = Vec2.get();
     var steeringForce = Vec2.get();
-    var bounds = {x:0, y:0, width:640, height:480};
+    var bounds = {
+        x: 0,
+        y: 0,
+        width: 640,
+        height: 480
+    };
     var edgeBehavior = Boid.EDGE_BOUNCE;
     var mass = 1.0;
     var maxSpeed = 10;
+    var maxSpeedSq = maxSpeed * maxSpeed;
     var maxForce = 1;
     // arrive
     var arriveThreshold = 50;
+    var arriveThresholdSq = arriveThreshold * arriveThreshold;
     // wander
     var wanderDistance = 10;
     var wanderRadius = 5;
@@ -24,9 +31,12 @@ function Boid() {
     // follow path
     var pathIndex = 0;
     var pathThreshold = 20;
+    var pathThresholdSq = pathThreshold * pathThreshold;
     // flock
-    var inSightDistance = 300;
-    var tooCloseDistance = 60;
+    var maxDistance = 300;
+    var maxDistanceSq = maxDistance * maxDistance;
+    var minDistance = 60;
+    var minDistanceSq = minDistance * minDistance;
 
     var setBounds = function(width, height, x, y) {
         bounds.width = width;
@@ -112,11 +122,11 @@ function Boid() {
         var desiredVelocity = targetVec.clone().subtract(position);
         desiredVelocity.normalize();
 
-        var distance = position.distance(targetVec);
-        if (distance > arriveThreshold) {
+        var distanceSq = position.distanceSq(targetVec);
+        if (distanceSq > arriveThresholdSq) {
             desiredVelocity.scaleBy(maxSpeed);
         } else {
-            var scalar = maxSpeed * distance / arriveThreshold;
+            var scalar = maxSpeed * distanceSq / arriveThresholdSq;
             desiredVelocity.scaleBy(scalar);
         }
         var force = desiredVelocity.subtract(velocity);
@@ -128,10 +138,11 @@ function Boid() {
 
     // look at velocity of boid and try to predict where it's going
     var pursue = function(targetBoid) {
-        var lookAheadTime = position.distance(targetBoid.position) / maxSpeed;
-        // e.g. of where new vec should be returned:
+        var lookAheadTime = position.distanceSq(targetBoid.position) / maxSpeedSq;
+
         var scaledVelocity = targetBoid.velocity.clone().scaleBy(lookAheadTime);
         var predictedTarget = targetBoid.position.clone().add(scaledVelocity);
+
         seek(predictedTarget);
 
         scaledVelocity.dispose();
@@ -142,11 +153,11 @@ function Boid() {
 
     // look at velocity of boid and try to predict where it's going
     var evade = function(targetBoid) {
-        var lookAheadTime = position.distance(targetBoid.position) / maxSpeed;
-        // e.g. of where new vec should be returned:
+        var lookAheadTime = position.distanceSq(targetBoid.position) / maxSpeedSq;
+
         var scaledVelocity = targetBoid.velocity.clone().scaleBy(lookAheadTime);
         var predictedTarget = targetBoid.position.clone().add(scaledVelocity);
-        // only this line diff from pursue:
+
         flee(predictedTarget);
 
         scaledVelocity.dispose();
@@ -224,21 +235,21 @@ function Boid() {
 
         var wayPoint = path[pathIndex];
         if (!wayPoint) {
-          pathIndex = 0;
-          return boid;
+            pathIndex = 0;
+            return boid;
         }
-        if (position.distance(wayPoint) < pathThreshold) {
-            if (pathIndex >= path.length-1) {
-                if (loop) { pathIndex = 0; }
-            }
-            else {
+        if (position.distanceSq(wayPoint) < pathThresholdSq) {
+            if (pathIndex >= path.length - 1) {
+                if (loop) {
+                    pathIndex = 0;
+                }
+            } else {
                 pathIndex++;
             }
         }
-        if (pathIndex >= path.length-1 && !loop) {
+        if (pathIndex >= path.length - 1 && !loop) {
             arrive(wayPoint);
-        }
-        else {
+        } else {
             seek(wayPoint);
         }
         return boid;
@@ -272,9 +283,9 @@ function Boid() {
         return boid;
     };
 
-    // is boid close enough to be in sight? for use with flock
+    // is boid close enough to be in sight and facing
     var inSight = function(boid) {
-        if (position.distance(boid.position) > inSightDistance) {
+        if (position.distanceSq(boid.position) > maxDistanceSq) {
             return false;
         }
         var heading = velocity.clone().normalize();
@@ -290,95 +301,152 @@ function Boid() {
         return true;
     };
 
-    // is boid too close? for use with flock
+    // is boid too close?
     var tooClose = function(boid) {
-        return position.distance(boid.position) < tooCloseDistance;
+        return position.distanceSq(boid.position) < minDistanceSq;
     };
 
     // methods
     var boid = {
-      setBounds: setBounds,
-      update: update,
-      pursue: pursue,
-      evade: evade,
-      wander: wander,
-      avoid: avoid,
-      followPath: followPath,
-      flock: flock,
-      arrive: arrive,
-      flee: flee,
-      userData: {}
+        setBounds: setBounds,
+        update: update,
+        pursue: pursue,
+        evade: evade,
+        wander: wander,
+        avoid: avoid,
+        followPath: followPath,
+        flock: flock,
+        arrive: arrive,
+        flee: flee,
+        position: position,
+        velocity: velocity,
+        userData: {}
     };
 
     // getters / setters
     Object.defineProperties(boid, {
-      position: {
-          get: function() { return position; }
-      },
-      velocity: {
-          get: function() { return velocity; }
-      },
-      edgeBehavior: {
-          get: function() { return edgeBehavior; },
-          set: function(value) { edgeBehavior = value; }
-      },
-      mass: {
-          get: function() { return mass; },
-          set: function(value) { mass = value; }
-      },
-      maxSpeed: {
-          get: function() { return maxSpeed; },
-          set: function(value) { maxSpeed = value; }
-      },
-      maxForce: {
-          get: function() { return maxForce; },
-          set: function(value) { maxForce = value; }
-      },
-      // arrive
-      arriveThreshold: {
-          get: function() { return arriveThreshold; },
-          set: function(value) { arriveThreshold = value; }
-      },
-      // wander
-      wanderDistance: {
-          get: function() { return wanderDistance; },
-          set: function(value) { wanderDistance = value; }
-      },
-      wanderRadius: {
-          get: function() { return wanderRadius; },
-          set: function(value) { wanderRadius = value; }
-      },
-      wanderRange: {
-          get: function() { return wanderRange; },
-          set: function(value) { wanderRange = value; }
-      },
-      // avoid
-      avoidDistance: {
-          get: function() { return avoidDistance; },
-          set: function(value) { avoidDistance = value; }
-      },
-      avoidBuffer: {
-          get: function() { return avoidBuffer; },
-          set: function(value) { avoidBuffer = value; }
-      },
-      // followPath
-      pathIndex: {
-          get: function() { return pathIndex; },
-          set: function(value) { pathIndex = value; }
-      },
-      pathThreshold: {
-          get: function() { return pathThreshold; },
-          set: function(value) { pathThreshold = value; }
-      },
-      //  flock
-      inSightDistance: {
-          get: function() { return inSightDistance; },
-          set: function(value) { inSightDistance = value; }
-      },
-      tooCloseDistance: {
-          get: function() { return tooCloseDistance; },
-          set: function(value) { tooCloseDistance = value; }
-      }
+        edgeBehavior: {
+            get: function() {
+                return edgeBehavior;
+            },
+            set: function(value) {
+                edgeBehavior = value;
+            }
+        },
+        mass: {
+            get: function() {
+                return mass;
+            },
+            set: function(value) {
+                mass = value;
+            }
+        },
+        maxSpeed: {
+            get: function() {
+                return maxSpeed;
+            },
+            set: function(value) {
+                maxSpeed = value;
+                maxSpeedSq = value * value;
+            }
+        },
+        maxForce: {
+            get: function() {
+                return maxForce;
+            },
+            set: function(value) {
+                maxForce = value;
+            }
+        },
+        // arrive
+        arriveThreshold: {
+            get: function() {
+                return arriveThreshold;
+            },
+            set: function(value) {
+                arriveThreshold = value;
+                arriveThresholdSq = value * value;
+            }
+        },
+        // wander
+        wanderDistance: {
+            get: function() {
+                return wanderDistance;
+            },
+            set: function(value) {
+                wanderDistance = value;
+            }
+        },
+        wanderRadius: {
+            get: function() {
+                return wanderRadius;
+            },
+            set: function(value) {
+                wanderRadius = value;
+            }
+        },
+        wanderRange: {
+            get: function() {
+                return wanderRange;
+            },
+            set: function(value) {
+                wanderRange = value;
+            }
+        },
+        // avoid
+        avoidDistance: {
+            get: function() {
+                return avoidDistance;
+            },
+            set: function(value) {
+                avoidDistance = value;
+            }
+        },
+        avoidBuffer: {
+            get: function() {
+                return avoidBuffer;
+            },
+            set: function(value) {
+                avoidBuffer = value;
+            }
+        },
+        // followPath
+        pathIndex: {
+            get: function() {
+                return pathIndex;
+            },
+            set: function(value) {
+                pathIndex = value;
+            }
+        },
+        pathThreshold: {
+            get: function() {
+                return pathThreshold;
+            },
+            set: function(value) {
+                pathThreshold = value;
+                pathThresholdSq = value * value;
+            }
+        },
+        //  flock
+        maxDistance: {
+            get: function() {
+                return maxDistance;
+            },
+            set: function(value) {
+                maxDistance = value;
+                maxDistanceSq = value * value;
+            }
+        },
+        minDistance: {
+            get: function() {
+                return minDistance;
+            },
+            set: function(value) {
+                minDistance = value;
+                minDistanceSq = value * value;
+            }
+        }
     });
 
     return Object.freeze(boid);

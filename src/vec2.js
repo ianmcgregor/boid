@@ -18,7 +18,7 @@ Vec2.prototype = {
     },
     normalize: function() {
         var l = this.length;
-        if(l === 0) {
+        if (l === 0) {
             this.x = 1;
             return this;
         }
@@ -29,8 +29,8 @@ Vec2.prototype = {
     isNormalized: function() {
         return this.length === 1;
     },
-    truncate:  function(max) {
-        if(this.length > max) {
+    truncate: function(max) {
+        if (this.length > max) {
             this.length = max;
         }
         return this;
@@ -67,13 +67,13 @@ Vec2.prototype = {
         */
         return this.x * vec.y - this.y * vec.x;
     },
-    distanceSquared: function(vec) {
+    distanceSq: function(vec) {
         var dx = vec.x - this.x;
         var dy = vec.y - this.y;
         return dx * dx + dy * dy;
     },
     distance: function(vec) {
-        return Math.sqrt(this.distanceSquared(vec));
+        return Math.sqrt(this.distanceSq(vec));
     },
     clone: function() {
         return Vec2.get(this.x, this.y);
@@ -107,31 +107,31 @@ Vec2.prototype = {
 // getters / setters
 
 Object.defineProperties(Vec2.prototype, {
-  lengthSquared: {
-      get: function() {
-          return this.x * this.x + this.y * this.y;
-      }
-  },
-  length: {
-      get: function() {
-          return Math.sqrt(this.lengthSquared);
-      },
-      set: function(value) {
-          var a = this.angle;
-          this.x = Math.cos(a) * value;
-          this.y = Math.sin(a) * value;
-      }
-  },
-  angle: {
-      get: function() {
-          return Math.atan2(this.y, this.x);
-      },
-      set: function(value) {
-          var l = this.length;
-          this.x = Math.cos(value) * l;
-          this.y = Math.sin(value) * l;
-      }
-  }
+    lengthSquared: {
+        get: function() {
+            return this.x * this.x + this.y * this.y;
+        }
+    },
+    length: {
+        get: function() {
+            return Math.sqrt(this.lengthSquared);
+        },
+        set: function(value) {
+            var a = this.angle;
+            this.x = Math.cos(a) * value;
+            this.y = Math.sin(a) * value;
+        }
+    },
+    angle: {
+        get: function() {
+            return Math.atan2(this.y, this.x);
+        },
+        set: function(value) {
+            var l = this.length;
+            this.x = Math.cos(value) * l;
+            this.y = Math.sin(value) * l;
+        }
+    }
 });
 
 // static
@@ -143,9 +143,19 @@ Vec2.get = function(x, y) {
     return v;
 };
 
+Vec2.fill = function(n) {
+    while (Vec2.pool.length < n) {
+        Vec2.pool.push(new Vec2());
+    }
+};
+
 Vec2.angleBetween = function(a, b) {
-    if(!a.isNormalized()) { a = a.clone().normalize(); }
-    if(!b.isNormalized()) { b = b.clone().normalize(); }
+    if (!a.isNormalized()) {
+        a = a.clone().normalize();
+    }
+    if (!b.isNormalized()) {
+        b = b.clone().normalize();
+    }
     return Math.acos(a.dotProduct(b));
 };
 
