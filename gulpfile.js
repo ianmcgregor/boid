@@ -23,10 +23,12 @@ function logError(msg) {
 
 // bundler
 var bundler = watchify(browserify({
-  entries: ['./src/' + entryFileName],
+  entries: ['src/' + entryFileName],
   standalone: standaloneName,
-  debug: true
-}, watchify.args));
+  debug: true,
+  cache: {},
+  packageCache: {}
+}), {poll: true});
 
 function bundle() {
   return bundler
@@ -101,6 +103,7 @@ gulp.task('jshint', function() {
 gulp.task('watch', function() {
   gulp.watch('test/**/*.js', ['jshint']);
   gulp.watch('examples/**/*.js', ['jshint']);
+  gulp.watch('src/**/*.js', ['bundle']);
 });
 
 // default
