@@ -22,6 +22,9 @@ Vec2.prototype = {
             this.x = 1;
             return this;
         }
+        if (l === 1) {
+            return this;
+        }
         this.x /= l;
         this.y /= l;
         return this;
@@ -55,9 +58,14 @@ Vec2.prototype = {
     },
     dotProduct: function(vec) {
         /*
-        If A and B are perpendicular (at 90 degrees to each other), the result of the dot product will be zero, because cos(Θ) will be zero.
-        If the angle between A and B are less than 90 degrees, the dot product will be positive (greater than zero), as cos(Θ) will be positive, and the vector lengths are always positive values.
-        If the angle between A and B are greater than 90 degrees, the dot product will be negative (less than zero), as cos(Θ) will be negative, and the vector lengths are always positive values
+        If A and B are perpendicular (at 90 degrees to each other), the result
+        of the dot product will be zero, because cos(Θ) will be zero.
+        If the angle between A and B are less than 90 degrees, the dot product
+        will be positive (greater than zero), as cos(Θ) will be positive, and
+        the vector lengths are always positive values.
+        If the angle between A and B are greater than 90 degrees, the dot
+        product will be negative (less than zero), as cos(Θ) will be negative,
+        and the vector lengths are always positive values
         */
         return this.x * vec.x + this.y * vec.y;
     },

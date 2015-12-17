@@ -18,48 +18,50 @@ var standaloneName = 'Boid',
 
 // log
 function logError(msg) {
-  console.log(chalk.bold.red('[ERROR] ' + msg.toString()));
+    console.log(chalk.bold.red('[ERROR] ' + msg.toString()));
 }
 
 // bundler
 var bundler = watchify(browserify({
-  entries: ['src/' + entryFileName],
-  standalone: standaloneName,
-  debug: true,
-  cache: {},
-  packageCache: {}
-}), {poll: true});
+    entries: ['src/' + entryFileName],
+    standalone: standaloneName,
+    debug: true,
+    cache: {},
+    packageCache: {}
+}));
 
 function bundle() {
-  return bundler
-    .bundle()
-    .on('error', logError)
-    .pipe(source(bundleFileName))
-    .pipe(buffer())
-    .pipe(gulp.dest('./dist/'))
-    .pipe(rename({ extname: '.min.js' }))
-    .pipe(uglify())
-    .pipe(strip())
-    .pipe(gulp.dest('./dist/'));
+    return bundler
+        .bundle()
+        .on('error', logError)
+        .pipe(source(bundleFileName))
+        .pipe(buffer())
+        .pipe(gulp.dest('./dist/'))
+        .pipe(rename({
+            extname: '.min.js'
+        }))
+        .pipe(uglify())
+        .pipe(strip())
+        .pipe(gulp.dest('./dist/'));
 }
 
 bundler.on('update', bundle); // on any dep update, runs the bundler
 gulp.task('bundle', ['jshint'], bundle);
 
 function bundleRelease(minify) {
-  var bundler = browserify({
-    entries: ['./src/' + entryFileName],
-    standalone: standaloneName,
-    debug: !minify
-  });
-
-  return bundler
+    return browserify({
+        entries: ['./src/' + entryFileName],
+        standalone: standaloneName,
+        debug: !minify
+    })
     .bundle()
     .on('error', logError)
     .pipe(source(bundleFileName))
     .pipe(buffer())
     .pipe(gulp.dest('./dist/'))
-    .pipe(rename({ extname: '.min.js' }))
+    .pipe(rename({
+        extname: '.min.js'
+    }))
     .pipe(uglify())
     .pipe(strip())
     .pipe(gulp.dest('./dist/'));
@@ -69,41 +71,40 @@ gulp.task('release', bundleRelease);
 
 // connect browsers
 gulp.task('connect', function() {
-  browserSync.init({
-    server: {
-      baseDir: ['./', 'examples']
-    },
-    files: [
-      'dist/*',
-      'examples/**/*'
-    ],
-    reloadDebounce: 500
-  });
+    browserSync.init({
+        server: {
+            baseDir: ['./', 'examples']
+        },
+        files: [
+            'dist/*',
+            'examples/**/*'
+        ],
+        reloadDebounce: 500
+    });
 });
 
 // reload browsers
 gulp.task('reload', function() {
-  browserSync.reload();
+    browserSync.reload();
 });
 
 // js hint
 gulp.task('jshint', function() {
-  return gulp.src([
-      './gulpfile.js',
-      'src/**/*.js',
-      'test/**/*.js',
-      'examples/**/*.js',
-      '!examples/js/highlight.pack.js'
-  ])
-  .pipe(jshint())
-  .pipe(jshint.reporter('jshint-stylish'));
+    return gulp.src([
+        './gulpfile.js',
+        'src/**/*.js',
+        'test/**/*.js',
+        'examples/**/*.js',
+        '!examples/js/highlight.pack.js'
+    ])
+    .pipe(jshint())
+    .pipe(jshint.reporter('jshint-stylish'));
 });
 
 // watch
 gulp.task('watch', function() {
-  gulp.watch('test/**/*.js', ['jshint']);
-  gulp.watch('examples/**/*.js', ['jshint']);
-  gulp.watch('src/**/*.js', ['bundle']);
+    gulp.watch('test/**/*.js', ['jshint']);
+    gulp.watch('examples/**/*.js', ['jshint']);
 });
 
 // default
