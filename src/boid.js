@@ -2,40 +2,61 @@
 
 var Vec2 = require('./vec2.js');
 
-function Boid() {
-    var position = Vec2.get();
-    var velocity = Vec2.get();
-    var steeringForce = Vec2.get();
-    var bounds = {
+var defaults = {
+    bounds: {
         x: 0,
         y: 0,
         width: 640,
         height: 480
-    };
-    var edgeBehavior = Boid.EDGE_BOUNCE;
-    var mass = 1.0;
-    var maxSpeed = 10;
+    },
+    edgeBehavior: 'bounce',
+    mass: 1.0,
+    maxSpeed: 10,
+    maxForce: 1,
+    arriveThreshold: 50,
+    wanderDistance: 10,
+    wanderRadius: 5,
+    wanderAngle: 0,
+    wanderRange: 1,
+    avoidDistance: 300,
+    avoidBuffer: 20,
+    pathThreshold: 20,
+    maxDistance: 300,
+    minDistance: 60
+};
+
+function Boid(options) {
+    options = configure(options);
+
+    var position = Vec2.get();
+    var velocity = Vec2.get();
+    var steeringForce = Vec2.get();
+
+    var bounds = options.bounds;
+    var edgeBehavior = options.edgeBehavior;
+    var mass = options.mass;
+    var maxSpeed = options.maxSpeed;
     var maxSpeedSq = maxSpeed * maxSpeed;
-    var maxForce = 1;
+    var maxForce = options.maxForce;
     // arrive
-    var arriveThreshold = 50;
+    var arriveThreshold = options.arriveThreshold;
     var arriveThresholdSq = arriveThreshold * arriveThreshold;
     // wander
-    var wanderDistance = 10;
-    var wanderRadius = 5;
-    var wanderAngle = 0;
-    var wanderRange = 1;
+    var wanderDistance = options.wanderDistance;
+    var wanderRadius = options.wanderRadius;
+    var wanderAngle = options.wanderAngle;
+    var wanderRange = options.wanderRange;
     // avoid
-    var avoidDistance = 300;
-    var avoidBuffer = 20;
+    var avoidDistance = options.avoidDistance;
+    var avoidBuffer = options.avoidBuffer;
     // follow path
     var pathIndex = 0;
-    var pathThreshold = 20;
+    var pathThreshold = options.pathThreshold;
     var pathThresholdSq = pathThreshold * pathThreshold;
     // flock
-    var maxDistance = 300;
+    var maxDistance = options.maxDistance;
     var maxDistanceSq = maxDistance * maxDistance;
-    var minDistance = 60;
+    var minDistance = options.minDistance;
     var minDistanceSq = minDistance * minDistance;
 
     var setBounds = function(width, height, x, y) {
@@ -471,6 +492,22 @@ Boid.obstacle = function(radius, x, y) {
         position: Vec2.get(x, y)
     };
 };
+
+function setDefaults(opts, defs) {
+    Object.keys(defs).forEach(function(key) {
+        if (typeof opts[key] === 'undefined') {
+            opts[key] = defs[key];
+        }
+    });
+}
+
+function configure(options) {
+    options = options || {};
+    options.bounds = options.bounds || {};
+    setDefaults(options, defaults);
+    setDefaults(options.bounds, defaults.bounds);
+    return options;
+}
 
 if (typeof module === 'object' && module.exports) {
     module.exports = Boid;
