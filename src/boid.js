@@ -338,6 +338,7 @@ function Boid(options) {
         followPath: followPath,
         flock: flock,
         arrive: arrive,
+        seek: seek,
         flee: flee,
         position: position,
         velocity: velocity,
