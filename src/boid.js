@@ -85,15 +85,18 @@ function Boid(options) {
     };
 
     var bounce = function() {
-        if (position.x > bounds.width) {
-            position.x = bounds.width;
+        var maxX = bounds.x + bounds.width;
+        if (position.x > maxX) {
+            position.x = maxX;
             velocity.x *= -1;
         } else if (position.x < bounds.x) {
             position.x = bounds.x;
             velocity.x *= -1;
         }
-        if (position.y > bounds.height) {
-            position.y = bounds.height;
+
+        var maxY = bounds.y + bounds.height;
+        if (position.y > maxY) {
+            position.y = maxY;
             velocity.y *= -1;
         } else if (position.y < bounds.y) {
             position.y = bounds.y;
@@ -102,15 +105,18 @@ function Boid(options) {
     };
 
     var wrap = function() {
-        if (position.x > bounds.width) {
+        var maxX = bounds.x + bounds.width;
+        if (position.x > maxX) {
             position.x = bounds.x;
         } else if (position.x < bounds.x) {
-            position.x = bounds.width;
+            position.x = maxX;
         }
-        if (position.y > bounds.height) {
+
+        var maxY = bounds.y + bounds.height;
+        if (position.y > maxY) {
             position.y = bounds.y;
         } else if (position.y < bounds.y) {
-            position.y = bounds.height;
+            position.y = maxY;
         }
     };
 
@@ -329,6 +335,7 @@ function Boid(options) {
 
     // methods
     var boid = {
+        bounds: bounds,
         setBounds: setBounds,
         update: update,
         pursue: pursue,
