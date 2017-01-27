@@ -3,14 +3,14 @@
 !/.gitattributes
 !/.gitignore
 !/.gitinclude
-!/.jshintrc
+!/.eslintrc
 !/.travis.yml
 
 ehthumbs.db
 Thumbs.db
 Desktop.ini
 user.properties
-
+npm-debug.log
 bower_components/
 node_modules/
 temp/

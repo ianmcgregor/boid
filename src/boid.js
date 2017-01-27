@@ -1,8 +1,8 @@
-'use strict';
+import Vec2 from './vec2.js';
 
-var Vec2 = require('./vec2.js');
+const PI_D2 = Math.PI / 2;
 
-var defaults = {
+const defaults = {
     bounds: {
         x: 0,
         y: 0,
@@ -25,67 +25,68 @@ var defaults = {
     minDistance: 60
 };
 
-function Boid(options) {
+function setDefaults(opts, defs) {
+    Object.keys(defs).forEach((key) => {
+        if (typeof opts[key] === 'undefined') {
+            opts[key] = defs[key];
+        }
+    });
+}
+
+function configure(options) {
+    options = options || {};
+    options.bounds = options.bounds || {};
+    setDefaults(options, defaults);
+    setDefaults(options.bounds, defaults.bounds);
+    return options;
+}
+
+export default function Boid(options) {
     options = configure(options);
 
-    var position = Vec2.get();
-    var velocity = Vec2.get();
-    var steeringForce = Vec2.get();
+    let boid = null;
+    const position = Vec2.get();
+    const velocity = Vec2.get();
+    const steeringForce = Vec2.get();
 
-    var bounds = options.bounds;
-    var edgeBehavior = options.edgeBehavior;
-    var mass = options.mass;
-    var maxSpeed = options.maxSpeed;
-    var maxSpeedSq = maxSpeed * maxSpeed;
-    var maxForce = options.maxForce;
+    const bounds = options.bounds;
+    let edgeBehavior = options.edgeBehavior;
+    let mass = options.mass;
+    let maxSpeed = options.maxSpeed;
+    let maxSpeedSq = maxSpeed * maxSpeed;
+    let maxForce = options.maxForce;
     // arrive
-    var arriveThreshold = options.arriveThreshold;
-    var arriveThresholdSq = arriveThreshold * arriveThreshold;
+    let arriveThreshold = options.arriveThreshold;
+    let arriveThresholdSq = arriveThreshold * arriveThreshold;
     // wander
-    var wanderDistance = options.wanderDistance;
-    var wanderRadius = options.wanderRadius;
-    var wanderAngle = options.wanderAngle;
-    var wanderRange = options.wanderRange;
+    let wanderDistance = options.wanderDistance;
+    let wanderRadius = options.wanderRadius;
+    let wanderAngle = options.wanderAngle;
+    let wanderRange = options.wanderRange;
     // avoid
-    var avoidDistance = options.avoidDistance;
-    var avoidBuffer = options.avoidBuffer;
+    let avoidDistance = options.avoidDistance;
+    let avoidBuffer = options.avoidBuffer;
     // follow path
-    var pathIndex = 0;
-    var pathThreshold = options.pathThreshold;
-    var pathThresholdSq = pathThreshold * pathThreshold;
+    let pathIndex = 0;
+    let pathThreshold = options.pathThreshold;
+    let pathThresholdSq = pathThreshold * pathThreshold;
     // flock
-    var maxDistance = options.maxDistance;
-    var maxDistanceSq = maxDistance * maxDistance;
-    var minDistance = options.minDistance;
-    var minDistanceSq = minDistance * minDistance;
+    let maxDistance = options.maxDistance;
+    let maxDistanceSq = maxDistance * maxDistance;
+    let minDistance = options.minDistance;
+    let minDistanceSq = minDistance * minDistance;
 
-    var setBounds = function(width, height, x, y) {
+    function setBounds(width, height, x, y) {
         bounds.width = width;
         bounds.height = height;
         bounds.x = x || 0;
         bounds.y = y || 0;
 
         return boid;
-    };
+    }
 
-    var update = function() {
-        steeringForce.truncate(maxForce);
-        steeringForce.divideBy(mass);
-        velocity.add(steeringForce);
-        steeringForce.reset();
-        velocity.truncate(maxSpeed);
-        position.add(velocity);
-
-        if (edgeBehavior === Boid.EDGE_BOUNCE) {
-            bounce();
-        } else if (edgeBehavior === Boid.EDGE_WRAP) {
-            wrap();
-        }
-        return boid;
-    };
-
-    var bounce = function() {
-        var maxX = bounds.x + bounds.width;
+    function bounce() {
+        const maxX = bounds.x + bounds.width;
         if (position.x > maxX) {
             position.x = maxX;
             velocity.x *= -1;
@@ -94,7 +95,7 @@ function Boid(options) {
             velocity.x *= -1;
         }
 
-        var maxY = bounds.y + bounds.height;
+        const maxY = bounds.y + bounds.height;
         if (position.y > maxY) {
             position.y = maxY;
             velocity.y *= -1;
@@ -102,73 +103,73 @@ function Boid(options) {
             position.y = bounds.y;
             velocity.y *= -1;
         }
-    };
+    }
 
-    var wrap = function() {
-        var maxX = bounds.x + bounds.width;
+    function wrap() {
+        const maxX = bounds.x + bounds.width;
         if (position.x > maxX) {
             position.x = bounds.x;
         } else if (position.x < bounds.x) {
             position.x = maxX;
         }
 
-        var maxY = bounds.y + bounds.height;
+        const maxY = bounds.y + bounds.height;
         if (position.y > maxY) {
             position.y = bounds.y;
         } else if (position.y < bounds.y) {
             position.y = maxY;
         }
-    };
+    }
 
-    var seek = function(targetVec) {
-        var desiredVelocity = targetVec.clone().subtract(position);
+    function seek(targetVec) {
+        const desiredVelocity = targetVec.clone().subtract(position);
         desiredVelocity.normalize();
         desiredVelocity.scaleBy(maxSpeed);
 
-        var force = desiredVelocity.subtract(velocity);
+        const force = desiredVelocity.subtract(velocity);
         steeringForce.add(force);
         force.dispose();
 
         return boid;
-    };
+    }
 
-    var flee = function(targetVec) {
-        var desiredVelocity = targetVec.clone().subtract(position);
+    function flee(targetVec) {
+        const desiredVelocity = targetVec.clone().subtract(position);
         desiredVelocity.normalize();
         desiredVelocity.scaleBy(maxSpeed);
 
-        var force = desiredVelocity.subtract(velocity);
+        const force = desiredVelocity.subtract(velocity);
         steeringForce.subtract(force);
         force.dispose();
 
         return boid;
-    };
+    }
 
     // seek until within arriveThreshold
-    var arrive = function(targetVec) {
-        var desiredVelocity = targetVec.clone().subtract(position);
+    function arrive(targetVec) {
+        const desiredVelocity = targetVec.clone().subtract(position);
         desiredVelocity.normalize();
 
-        var distanceSq = position.distanceSq(targetVec);
+        const distanceSq = position.distanceSq(targetVec);
         if (distanceSq > arriveThresholdSq) {
             desiredVelocity.scaleBy(maxSpeed);
         } else {
-            var scalar = maxSpeed * distanceSq / arriveThresholdSq;
+            const scalar = maxSpeed * distanceSq / arriveThresholdSq;
             desiredVelocity.scaleBy(scalar);
         }
-        var force = desiredVelocity.subtract(velocity);
+        const force = desiredVelocity.subtract(velocity);
         steeringForce.add(force);
         force.dispose();
 
         return boid;
-    };
+    }
 
     // look at velocity of boid and try to predict where it's going
-    var pursue = function(targetBoid) {
-        var lookAheadTime = position.distanceSq(targetBoid.position) / maxSpeedSq;
+    function pursue(targetBoid) {
+        const lookAheadTime = position.distanceSq(targetBoid.position) / maxSpeedSq;
 
-        var scaledVelocity = targetBoid.velocity.clone().scaleBy(lookAheadTime);
-        var predictedTarget = targetBoid.position.clone().add(scaledVelocity);
+        const scaledVelocity = targetBoid.velocity.clone().scaleBy(lookAheadTime);
+        const predictedTarget = targetBoid.position.clone().add(scaledVelocity);
 
         seek(predictedTarget);
 
@@ -176,14 +177,14 @@ function Boid(options) {
         predictedTarget.dispose();
 
         return boid;
-    };
+    }
 
     // look at velocity of boid and try to predict where it's going
-    var evade = function(targetBoid) {
-        var lookAheadTime = position.distanceSq(targetBoid.position) / maxSpeedSq;
+    function evade(targetBoid) {
+        const lookAheadTime = position.distanceSq(targetBoid.position) / maxSpeedSq;
 
-        var scaledVelocity = targetBoid.velocity.clone().scaleBy(lookAheadTime);
-        var predictedTarget = targetBoid.position.clone().add(scaledVelocity);
+        const scaledVelocity = targetBoid.velocity.clone().scaleBy(lookAheadTime);
+        const predictedTarget = targetBoid.position.clone().add(scaledVelocity);
 
         flee(predictedTarget);
 
@@ -191,58 +192,60 @@ function Boid(options) {
         predictedTarget.dispose();
 
         return boid;
-    };
+    }
 
     // wander around, changing angle by a limited amount each tick
-    var wander = function() {
-        var center = velocity.clone().normalize().scaleBy(wanderDistance);
+    function wander() {
+        const center = velocity.clone().normalize().scaleBy(wanderDistance);
 
-        var offset = Vec2.get();
-        offset.length = wanderRadius;
-        offset.angle = wanderAngle;
+        const offset = Vec2.get();
+        offset.set(wanderAngle, wanderRadius);
+        // offset.length = wanderRadius;
+        // offset.angle = wanderAngle;
         wanderAngle += Math.random() * wanderRange - wanderRange * 0.5;
 
-        var force = center.add(offset);
+        const force = center.add(offset);
         steeringForce.add(force);
 
         offset.dispose();
         force.dispose();
 
         return boid;
-    };
+    }
 
     // gets a bit rough used in combination with seeking as the boid attempts
     // to seek straight through an object while simultaneously trying to avoid it
-    var avoid = function(obstacles) {
-        for (var i = 0; i < obstacles.length; i++) {
-            var obstacle = obstacles[i];
-            var heading = velocity.clone().normalize();
+    function avoid(obstacles) {
+        for (let i = 0; i < obstacles.length; i++) {
+            const obstacle = obstacles[i];
+            const heading = velocity.clone().normalize();
 
             // vec between obstacle and boid
-            var difference = obstacle.position.clone().subtract(position);
-            var dotProd = difference.dotProduct(heading);
+            const difference = obstacle.position.clone().subtract(position);
+            const dotProd = difference.dotProduct(heading);
 
             // if obstacle in front of boid
             if (dotProd > 0) {
                 // vec to represent 'feeler' arm
-                var feeler = heading.clone().scaleBy(avoidDistance);
+                const feeler = heading.clone().scaleBy(avoidDistance);
                 // project difference onto feeler
-                var projection = heading.clone().scaleBy(dotProd);
+                const projection = heading.clone().scaleBy(dotProd);
                 // distance from obstacle to feeler
-                var vecDistance = projection.subtract(difference);
-                var distance = vecDistance.length;
+                const vecDistance = projection.subtract(difference);
+                const distance = vecDistance.length;
                 // if feeler intersects obstacle (plus buffer), and projection
                 // less than feeler length, will collide
                 if (distance < (obstacle.radius || 0) + avoidBuffer && projection.length < feeler.length) {
                     // calc a force +/- 90 deg from vec to circ
-                    var force = heading.clone().scaleBy(maxSpeed);
-                    force.angle += difference.sign(velocity) * Math.PI / 2;
+                    const force = heading.clone().scaleBy(maxSpeed);
+                    force.angle += difference.sign(velocity) * PI_D2;
                     // scale force by distance (further = smaller force)
-                    force.scaleBy(1 - projection.length / feeler.length);
+                    const dist = projection.length / feeler.length;
+                    force.scaleBy(1 - dist);
                     // add to steering force
                     steeringForce.add(force);
                     // braking force - slows boid down so it has time to turn (closer = harder)
-                    velocity.scaleBy(projection.length / feeler.length);
+                    velocity.scaleBy(dist);
 
                     force.dispose();
                 }
@@ -254,13 +257,13 @@ function Boid(options) {
             difference.dispose();
         }
         return boid;
-    };
+    }
 
     // follow a path made up of an array or vectors
-    var followPath = function(path, loop) {
+    function followPath(path, loop) {
         loop = !!loop;
 
-        var wayPoint = path[pathIndex];
+        const wayPoint = path[pathIndex];
         if (!wayPoint) {
             pathIndex = 0;
             return boid;
@@ -280,19 +283,35 @@ function Boid(options) {
             seek(wayPoint);
         }
         return boid;
-    };
+    }
+
+    // is boid close enough to be in sight and facing
+    function inSight(b) {
+        if (position.distanceSq(b.position) > maxDistanceSq) {
+            return false;
+        }
+        const heading = velocity.clone().normalize();
+        const difference = b.position.clone().subtract(position);
+        const dotProd = difference.dotProduct(heading);
+
+        heading.dispose();
+        difference.dispose();
+
+        return dotProd >= 0;
+    }
 
     // flock - group of boids loosely move together
-    var flock = function(boids) {
-        var averageVelocity = velocity.clone();
-        var averagePosition = Vec2.get();
-        var inSightCount = 0;
-        for (var i = 0; i < boids.length; i++) {
-            var b = boids[i];
+    function flock(boids) {
+        const averageVelocity = velocity.clone();
+        const averagePosition = Vec2.get();
+        let inSightCount = 0;
+        for (let i = 0; i < boids.length; i++) {
+            const b = boids[i];
             if (b !== boid && inSight(b)) {
                 averageVelocity.add(b.velocity);
                 averagePosition.add(b.position);
-                if (tooClose(b)) {
+
+                if (position.distanceSq(b.position) < minDistanceSq) {
                     flee(b.position);
                 }
                 inSightCount++;
@@ -308,47 +327,47 @@ function Boid(options) {
         averagePosition.dispose();
 
         return boid;
-    };
+    }
 
-    // is boid close enough to be in sight and facing
-    var inSight = function(boid) {
-        if (position.distanceSq(boid.position) > maxDistanceSq) {
-            return false;
+    function update() {
+        steeringForce.truncate(maxForce);
+        if (mass !== 1) {
+            steeringForce.divideBy(mass);
         }
-        var heading = velocity.clone().normalize();
-        var difference = boid.position.clone().subtract(position);
-        var dotProd = difference.dotProduct(heading);
+        // velocity.add(steeringForce);
+        velocity.x += steeringForce.x;
+        velocity.y += steeringForce.y;
+        // steeringForce.reset();
+        steeringForce.x = 0;
+        steeringForce.y = 0;
+        velocity.truncate(maxSpeed);
+        // position.add(velocity);
+        position.x += velocity.x;
+        position.y += velocity.y;
 
-        heading.dispose();
-        difference.dispose();
-
-        if (dotProd < 0) {
-            return false;
+        if (edgeBehavior === Boid.EDGE_BOUNCE) {
+            bounce();
+        } else if (edgeBehavior === Boid.EDGE_WRAP) {
+            wrap();
         }
-        return true;
-    };
+        return boid;
+    }
 
-    // is boid too close?
-    var tooClose = function(boid) {
-        return position.distanceSq(boid.position) < minDistanceSq;
-    };
-
-    // methods
-    var boid = {
-        bounds: bounds,
-        setBounds: setBounds,
-        update: update,
-        pursue: pursue,
-        evade: evade,
-        wander: wander,
-        avoid: avoid,
-        followPath: followPath,
-        flock: flock,
-        arrive: arrive,
-        seek: seek,
-        flee: flee,
-        position: position,
-        velocity: velocity,
+    boid = {
+        bounds,
+        setBounds,
+        update,
+        pursue,
+        evade,
+        wander,
+        avoid,
+        followPath,
+        flock,
+        arrive,
+        seek,
+        flee,
+        position,
+        velocity,
         userData: {}
     };
 
@@ -500,23 +519,3 @@ Boid.obstacle = function(radius, x, y) {
         position: Vec2.get(x, y)
     };
 };
-
-function setDefaults(opts, defs) {
-    Object.keys(defs).forEach(function(key) {
-        if (typeof opts[key] === 'undefined') {
-            opts[key] = defs[key];
-        }
-    });
-}
-
-function configure(options) {
-    options = options || {};
-    options.bounds = options.bounds || {};
-    setDefaults(options, defaults);
-    setDefaults(options.bounds, defaults.bounds);
-    return options;
-}
-
-if (typeof module === 'object' && module.exports) {
-    module.exports = Boid;
-}

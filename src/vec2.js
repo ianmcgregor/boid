@@ -1,62 +1,75 @@
-'use strict';
+const {acos, atan2, cos, sin, sqrt} = Math;
 
-function Vec2(x, y) {
-    this.x = x || 0;
-    this.y = y || 0;
-}
+const pool = [];
 
-Vec2.prototype = {
-    add: function(vec) {
+export default class Vec2 {
+    constructor(x = 0, y = 0) {
+        this.x = x;
+        this.y = y;
+    }
+
+    add(vec) {
         this.x = this.x + vec.x;
         this.y = this.y + vec.y;
         return this;
-    },
-    subtract: function(vec) {
+    }
+
+    subtract(vec) {
         this.x = this.x - vec.x;
         this.y = this.y - vec.y;
         return this;
-    },
-    normalize: function() {
-        var l = this.length;
-        if (l === 0) {
+    }
+
+    normalize() {
+        const lsq = this.lengthSquared;
+        if (lsq === 0) {
             this.x = 1;
             return this;
         }
-        if (l === 1) {
+        if (lsq === 1) {
             return this;
         }
+        const l = sqrt(lsq);
         this.x /= l;
         this.y /= l;
         return this;
-    },
-    isNormalized: function() {
-        return this.length === 1;
-    },
-    truncate: function(max) {
-        if (this.length > max) {
+    }
+
+    isNormalized() {
+        return this.lengthSquared === 1;
+    }
+
+    truncate(max) {
+        // if (this.length > max) {
+        if (this.lengthSquared > max * max) {
             this.length = max;
         }
         return this;
-    },
-    scaleBy: function(mul) {
+    }
+
+    scaleBy(mul) {
         this.x *= mul;
         this.y *= mul;
         return this;
-    },
-    divideBy: function(div) {
+    }
+
+    divideBy(div) {
         this.x /= div;
         this.y /= div;
         return this;
-    },
-    equals: function(vec) {
+    }
+
+    equals(vec) {
         return this.x === vec.x && this.y === vec.y;
-    },
-    negate: function() {
+    }
+
+    negate() {
         this.x = -this.x;
         this.y = -this.y;
         return this;
-    },
-    dotProduct: function(vec) {
+    }
+
+    dotProduct(vec) {
         /*
         If A and B are perpendicular (at 90 degrees to each other), the result
         of the dot product will be zero, because cos(Θ) will be zero.
@@ -68,105 +81,104 @@ Vec2.prototype = {
         and the vector lengths are always positive values
         */
         return this.x * vec.x + this.y * vec.y;
-    },
-    crossProduct: function(vec) {
+    }
+
+    crossProduct(vec) {
         /*
         The sign tells us if vec to the left (-) or the right (+) of this vec
         */
         return this.x * vec.y - this.y * vec.x;
-    },
-    distanceSq: function(vec) {
-        var dx = vec.x - this.x;
-        var dy = vec.y - this.y;
+    }
+
+    distanceSq(vec) {
+        const dx = vec.x - this.x;
+        const dy = vec.y - this.y;
         return dx * dx + dy * dy;
-    },
-    distance: function(vec) {
-        return Math.sqrt(this.distanceSq(vec));
-    },
-    clone: function() {
+    }
+
+    distance(vec) {
+        return sqrt(this.distanceSq(vec));
+    }
+
+    clone() {
         return Vec2.get(this.x, this.y);
-    },
-    reset: function() {
+    }
+
+    reset() {
         this.x = 0;
         this.y = 0;
         return this;
-    },
-    perpendicular: function() {
+    }
+
+    perpendicular() {
         return Vec2.get(-this.y, this.x);
-    },
-    sign: function(vec) {
+    }
+
+    sign(vec) {
         // Determines if a given vector is to the right or left of this vector.
         // If to the left, returns -1. If to the right, +1.
-        var p = this.perpendicular();
-        var s = p.dotProduct(vec) < 0 ? -1 : 1;
+        const p = this.perpendicular();
+        const s = p.dotProduct(vec) < 0 ? -1 : 1;
         p.dispose();
         return s;
-    },
-    set: function(x, y) {
-        this.x = x || 0;
-        this.y = y || 0;
+    }
+
+    set(angle, length) {
+        this.x = cos(angle) * length;
+        this.y = sin(angle) * length;
         return this;
-    },
-    dispose: function() {
-        Vec2.pool.push(this.reset());
     }
-};
 
-// getters / setters
+    dispose() {
+        this.x = 0;
+        this.y = 0;
+        pool.push(this);
+    }
 
-Object.defineProperties(Vec2.prototype, {
-    lengthSquared: {
-        get: function() {
-            return this.x * this.x + this.y * this.y;
+    get lengthSquared() {
+        return this.x * this.x + this.y * this.y;
+    }
+
+    get length() {
+        return sqrt(this.lengthSquared);
+    }
+
+    set length(value) {
+        const a = this.angle;
+        this.x = cos(a) * value;
+        this.y = sin(a) * value;
+    }
+
+    get angle() {
+        return atan2(this.y, this.x);
+    }
+
+    set angle(value) {
+        const l = this.length;
+        this.x = cos(value) * l;
+        this.y = sin(value) * l;
+    }
+
+    static get(x, y) {
+        const v = pool.length > 0 ? pool.pop() : new Vec2();
+        v.x = x || 0;
+        v.y = y || 0;
+        return v;
+    }
+
+    static fill(n) {
+        while (pool.length < n) {
+            pool.push(new Vec2());
         }
-    },
-    length: {
-        get: function() {
-            return Math.sqrt(this.lengthSquared);
-        },
-        set: function(value) {
-            var a = this.angle;
-            this.x = Math.cos(a) * value;
-            this.y = Math.sin(a) * value;
+    }
+
+    static angleBetween(a, b) {
+        if (!a.isNormalized()) {
+            a = a.clone().normalize();
         }
-    },
-    angle: {
-        get: function() {
-            return Math.atan2(this.y, this.x);
-        },
-        set: function(value) {
-            var l = this.length;
-            this.x = Math.cos(value) * l;
-            this.y = Math.sin(value) * l;
+        if (!b.isNormalized()) {
+            b = b.clone().normalize();
         }
+        return acos(a.dotProduct(b));
     }
-});
-
-// static
-
-Vec2.pool = [];
-Vec2.get = function(x, y) {
-    var v = Vec2.pool.length > 0 ? Vec2.pool.pop() : new Vec2();
-    v.set(x, y);
-    return v;
-};
-
-Vec2.fill = function(n) {
-    while (Vec2.pool.length < n) {
-        Vec2.pool.push(new Vec2());
-    }
-};
-
-Vec2.angleBetween = function(a, b) {
-    if (!a.isNormalized()) {
-        a = a.clone().normalize();
-    }
-    if (!b.isNormalized()) {
-        b = b.clone().normalize();
-    }
-    return Math.acos(a.dotProduct(b));
-};
-
-if (typeof module === 'object' && module.exports) {
-    module.exports = Vec2;
 }

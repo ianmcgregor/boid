@@ -1,46 +1,45 @@
-'use strict';
-
 (function() {
-    var Boid = window.Boid,
+    const flockers = [];
+    const Boid = window.Boid,
         canvas = document.querySelector('canvas'),
         context = canvas.getContext('2d'),
-        canvasTrails, contextTrails,
         options = {
-          mass: 1,
-          maxSpeed: 5,
-          maxForce: 1,
-          edgeBehavior: 'bounce',
-          maxDistance: 400,
-          minDistance: 20,
-          count: 40,
-          randomColors: false,
-          clear: true,
-          size: 6,
-          trails: false
+            mass: 1,
+            maxSpeed: 5,
+            maxForce: 1,
+            edgeBehavior: 'bounce',
+            maxDistance: 400,
+            minDistance: 20,
+            count: 40,
+            randomColors: false,
+            clear: true,
+            size: 6,
+            trails: false
         };
 
-    var flockers = [];
+    let canvasTrails, contextTrails;
+
+    function randomColor() {
+        const rnd = 0xFFFFFF * Math.random();
+        return '#' + Math.floor(rnd).toString(16);
+    }
+
+    function createFlocker() {
+        const flocker = new Boid();
+        flocker.position.x = canvas.width * Math.random();
+        flocker.position.y = canvas.height * Math.random();
+        flocker.velocity.x = 20 * Math.random() - 10;
+        flocker.velocity.y = 20 * Math.random() - 10;
+        flocker.userData.color = randomColor();
+        return flocker;
+    }
+
     while (flockers.length < options.count) {
         flockers.push(createFlocker());
     }
 
-    function randomColor() {
-      var rnd = 0xFFFFFF * Math.random();
-      return '#' + Math.floor(rnd).toString(16);
-    }
-
-    function createFlocker() {
-      var flocker = new Boid();
-      flocker.position.x = canvas.width * Math.random();
-      flocker.position.y = canvas.height * Math.random();
-      flocker.velocity.x = 20 * Math.random() - 10;
-      flocker.velocity.y = 20 * Math.random() - 10;
-      flocker.userData.color = randomColor();
-      return flocker;
-    }
-
     function update() {
-        for (var i = 0; i < flockers.length; i++) {
+        for (let i = 0; i < flockers.length; i++) {
             flockers[i].flock(flockers).update();
         }
     }
@@ -63,8 +62,8 @@
         }
         context.fillStyle = 'black';
 
-        for (var i = 0; i < flockers.length; i++) {
-            var point = flockers[i].position;
+        for (let i = 0; i < flockers.length; i++) {
+            const point = flockers[i].position;
             if (options.randomColors) {
                 context.fillStyle = flockers[i].userData.color;
             }
@@ -82,48 +81,48 @@
     loop();
 
     (function() {
-        var gui = new window.dat.GUI();
+        const gui = new window.dat.GUI();
         gui.add(options, 'mass', 0, 10).onChange(function(value) {
-          flockers.forEach(function(flocker) {
-            flocker.mass = value;
-          });
+            flockers.forEach(function(flocker) {
+                flocker.mass = value;
+            });
         });
         gui.add(options, 'maxSpeed', 0, 100).onChange(function(value) {
-          flockers.forEach(function(flocker) {
-            flocker.maxSpeed = value;
-          });
+            flockers.forEach(function(flocker) {
+                flocker.maxSpeed = value;
+            });
         });
         gui.add(options, 'maxForce', 0, 10).onChange(function(value) {
-          flockers.forEach(function(flocker) {
-            flocker.maxForce = value;
-          });
+            flockers.forEach(function(flocker) {
+                flocker.maxForce = value;
+            });
         });
         gui.add(options, 'edgeBehavior', [
-          'none',
-          'wrap',
-          'bounce'
+            'none',
+            'wrap',
+            'bounce'
         ]).onChange(function(value) {
-          flockers.forEach(function(flocker) {
-            flocker.edgeBehavior = value;
-          });
+            flockers.forEach(function(flocker) {
+                flocker.edgeBehavior = value;
+            });
         });
         gui.add(options, 'maxDistance', 0, 500).onChange(function(value) {
-          flockers.forEach(function(flocker) {
-            flocker.maxDistance = value;
-          });
+            flockers.forEach(function(flocker) {
+                flocker.maxDistance = value;
+            });
         });
         gui.add(options, 'minDistance', 0, 100).onChange(function(value) {
-          flockers.forEach(function(flocker) {
-            flocker.minDistance = value;
-          });
+            flockers.forEach(function(flocker) {
+                flocker.minDistance = value;
+            });
         });
         gui.add(options, 'count', 1, 200).onChange(function(value) {
-          while (flockers.length < value) {
-              flockers.push(createFlocker());
-          }
-          while (flockers.length > value) {
-              flockers.pop();
-          }
+            while (flockers.length < value) {
+                flockers.push(createFlocker());
+            }
+            while (flockers.length > value) {
+                flockers.pop();
+            }
         });
         gui.add(options, 'randomColors').name('random colors');
         gui.add(options, 'clear').name('clear canvas');

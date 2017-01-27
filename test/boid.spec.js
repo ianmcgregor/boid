@@ -1,11 +1,8 @@
-'use strict';
-
-var Boid = require('../src/boid.js');
-// var Vec2 = require('../src/vec2.js');
+const Boid = window.Boid;
 
 describe('boid', function() {
 
-    var boid = new Boid();
+    const boid = new Boid();
 
     it('should have created a boid instance', function() {
         expect(boid).to.be.an('object');
