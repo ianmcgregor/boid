@@ -149,6 +149,12 @@ var Vec2 = function () {
         return this;
     };
 
+    Vec2.prototype.copy = function copy(vec) {
+        this.x = vec.x;
+        this.y = vec.y;
+        return this;
+    };
+
     Vec2.prototype.perpendicular = function perpendicular() {
         return Vec2.get(-this.y, this.x);
     };
@@ -239,6 +245,7 @@ var defaults = {
     mass: 1.0,
     maxSpeed: 10,
     maxForce: 1,
+    radius: 0,
     arriveThreshold: 50,
     wanderDistance: 10,
     wanderRadius: 5,
@@ -281,6 +288,7 @@ function Boid(options) {
     var maxSpeed = options.maxSpeed;
     var maxSpeedSq = maxSpeed * maxSpeed;
     var maxForce = options.maxForce;
+    var radius = options.radius;
     // arrive
     var arriveThreshold = options.arriveThreshold;
     var arriveThresholdSq = arriveThreshold * arriveThreshold;
@@ -312,37 +320,41 @@ function Boid(options) {
     }
 
     function bounce() {
-        var maxX = bounds.x + bounds.width;
+        var minX = bounds.x + radius;
+        var maxX = bounds.x + bounds.width - radius;
         if (position.x > maxX) {
             position.x = maxX;
             velocity.x *= -1;
-        } else if (position.x < bounds.x) {
-            position.x = bounds.x;
+        } else if (position.x < minX) {
+            position.x = minX;
             velocity.x *= -1;
         }
 
-        var maxY = bounds.y + bounds.height;
+        var minY = bounds.y + radius;
+        var maxY = bounds.y + bounds.height - radius;
         if (position.y > maxY) {
             position.y = maxY;
             velocity.y *= -1;
-        } else if (position.y < bounds.y) {
-            position.y = bounds.y;
+        } else if (position.y < minY) {
+            position.y = minY;
             velocity.y *= -1;
         }
     }
 
     function wrap() {
-        var maxX = bounds.x + bounds.width;
+        var minX = bounds.x - radius;
+        var maxX = bounds.x + bounds.width + radius;
         if (position.x > maxX) {
-            position.x = bounds.x;
-        } else if (position.x < bounds.x) {
+            position.x = minX;
+        } else if (position.x < minX) {
             position.x = maxX;
         }
 
-        var maxY = bounds.y + bounds.height;
+        var minY = bounds.y - radius;
+        var maxY = bounds.y + bounds.height + radius;
         if (position.y > maxY) {
-            position.y = bounds.y;
-        } else if (position.y < bounds.y) {
+            position.y = minY;
+        } else if (position.y < minY) {
             position.y = maxY;
         }
     }
@@ -630,6 +642,14 @@ function Boid(options) {
             },
             set: function set(value) {
                 maxForce = value;
+            }
+        },
+        radius: {
+            get: function get() {
+                return radius;
+            },
+            set: function set(value) {
+                radius = value;
             }
         },
         // arrive

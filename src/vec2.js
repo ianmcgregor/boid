@@ -110,6 +110,12 @@ export default class Vec2 {
         return this;
     }
 
+    copy(vec) {
+        this.x = vec.x;
+        this.y = vec.y;
+        return this;
+    }
+
     perpendicular() {
         return Vec2.get(-this.y, this.x);
     }

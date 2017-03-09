@@ -13,6 +13,7 @@ const defaults = {
     mass: 1.0,
     maxSpeed: 10,
     maxForce: 1,
+    radius: 0,
     arriveThreshold: 50,
     wanderDistance: 10,
     wanderRadius: 5,
@@ -55,6 +56,7 @@ export default function Boid(options) {
     let maxSpeed = options.maxSpeed;
     let maxSpeedSq = maxSpeed * maxSpeed;
     let maxForce = options.maxForce;
+    let radius = options.radius;
     // arrive
     let arriveThreshold = options.arriveThreshold;
     let arriveThresholdSq = arriveThreshold * arriveThreshold;
@@ -86,37 +88,41 @@ export default function Boid(options) {
     }
 
     function bounce() {
-        const maxX = bounds.x + bounds.width;
+        const minX = bounds.x + radius;
+        const maxX = bounds.x + bounds.width - radius;
         if (position.x > maxX) {
             position.x = maxX;
             velocity.x *= -1;
-        } else if (position.x < bounds.x) {
-            position.x = bounds.x;
+        } else if (position.x < minX) {
+            position.x = minX;
             velocity.x *= -1;
         }
 
-        const maxY = bounds.y + bounds.height;
+        const minY = bounds.y + radius;
+        const maxY = bounds.y + bounds.height - radius;
         if (position.y > maxY) {
             position.y = maxY;
             velocity.y *= -1;
-        } else if (position.y < bounds.y) {
-            position.y = bounds.y;
+        } else if (position.y < minY) {
+            position.y = minY;
             velocity.y *= -1;
         }
     }
 
     function wrap() {
-        const maxX = bounds.x + bounds.width;
+        const minX = bounds.x - radius;
+        const maxX = bounds.x + bounds.width + radius;
         if (position.x > maxX) {
-            position.x = bounds.x;
-        } else if (position.x < bounds.x) {
+            position.x = minX;
+        } else if (position.x < minX) {
             position.x = maxX;
         }
 
-        const maxY = bounds.y + bounds.height;
+        const minY = bounds.y - radius;
+        const maxY = bounds.y + bounds.height + radius;
         if (position.y > maxY) {
-            position.y = bounds.y;
-        } else if (position.y < bounds.y) {
+            position.y = minY;
+        } else if (position.y < minY) {
             position.y = maxY;
         }
     }
@@ -404,6 +410,14 @@ export default function Boid(options) {
             },
             set: function(value) {
                 maxForce = value;
+            }
+        },
+        radius: {
+            get: function() {
+                return radius;
+            },
+            set: function(value) {
+                radius = value;
             }
         },
         // arrive
