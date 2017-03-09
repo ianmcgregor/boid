@@ -1,6 +1,6 @@
 {
   "name": "boid",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Bird-like behaviours",
   "keywords": [
     "boid",
@@ -42,5 +42,15 @@
     "rollup-plugin-strip": "^1.1.1",
     "rollup-plugin-uglify": "^1.0.1",
     "rollup-watch": "^3.2.2"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
   }
 }
