@@ -26,56 +26,46 @@ const defaults = {
     minDistance: 60
 };
 
-function setDefaults(opts, defs) {
-    Object.keys(defs).forEach((key) => {
-        if (typeof opts[key] === 'undefined') {
-            opts[key] = defs[key];
-        }
-    });
-}
-
-function configure(options) {
-    options = options || {};
-    options.bounds = options.bounds || {};
-    setDefaults(options, defaults);
-    setDefaults(options.bounds, defaults.bounds);
-    return options;
+function getOpt(options, key) {
+    if (options && typeof options[key] !== 'undefined') {
+        return options[key];
+    }
+    return defaults[key];
 }
 
 export default function Boid(options) {
-    options = configure(options);
-
     let boid = null;
     const position = Vec2.get();
     const velocity = Vec2.get();
     const steeringForce = Vec2.get();
 
-    const bounds = options.bounds;
-    let edgeBehavior = options.edgeBehavior;
-    let mass = options.mass;
-    let maxSpeed = options.maxSpeed;
+    const bounds = Object.assign({}, defaults.bounds, (options && options.bounds));
+
+    let edgeBehavior = getOpt(options, 'edgeBehavior');
+    let mass = getOpt(options, 'mass');
+    let maxSpeed = getOpt(options, 'maxSpeed');
     let maxSpeedSq = maxSpeed * maxSpeed;
-    let maxForce = options.maxForce;
-    let radius = options.radius;
+    let maxForce = getOpt(options, 'maxForce');
+    let radius = getOpt(options, 'radius');
     // arrive
-    let arriveThreshold = options.arriveThreshold;
+    let arriveThreshold = getOpt(options, 'arriveThreshold');
     let arriveThresholdSq = arriveThreshold * arriveThreshold;
     // wander
-    let wanderDistance = options.wanderDistance;
-    let wanderRadius = options.wanderRadius;
-    let wanderAngle = options.wanderAngle;
-    let wanderRange = options.wanderRange;
+    let wanderDistance = getOpt(options, 'wanderDistance');
+    let wanderRadius = getOpt(options, 'wanderRadius');
+    let wanderAngle = getOpt(options, 'wanderAngle');
+    let wanderRange = getOpt(options, 'wanderRange');
     // avoid
-    let avoidDistance = options.avoidDistance;
-    let avoidBuffer = options.avoidBuffer;
+    let avoidDistance = getOpt(options, 'avoidDistance');
+    let avoidBuffer = getOpt(options, 'avoidBuffer');
     // follow path
     let pathIndex = 0;
-    let pathThreshold = options.pathThreshold;
+    let pathThreshold = getOpt(options, 'pathThreshold');
     let pathThresholdSq = pathThreshold * pathThreshold;
     // flock
-    let maxDistance = options.maxDistance;
+    let maxDistance = getOpt(options, 'maxDistance');
     let maxDistanceSq = maxDistance * maxDistance;
-    let minDistance = options.minDistance;
+    let minDistance = getOpt(options, 'minDistance');
     let minDistanceSq = minDistance * minDistance;
 
     function setBounds(width, height, x, y) {

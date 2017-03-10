@@ -173,6 +173,5 @@ $ bower install
 To run tests:
 
 ```
-$ npm install -g karma-cli
-$ karma start
+$ npm test
 ```

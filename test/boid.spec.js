@@ -1,4 +1,6 @@
-const Boid = window.Boid;
+// const Boid = window.Boid;
+const Boid = require('../dist/boid');
+const expect = require('chai').expect;
 
 describe('boid', function() {
 
